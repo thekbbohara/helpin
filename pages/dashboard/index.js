@@ -70,7 +70,7 @@ export const getServerSideProps = async (ctx) => {
 
       const { data, error } = await supabase.from('users').select(`*`);
 
-      customerList = data;
+      customerList = data || [];
 
       return { props: { customerList } };
 };

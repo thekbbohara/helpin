@@ -75,7 +75,7 @@ export const getServerSideProps = async (ctx) => {
                   .select(`email,id,role`)
                   .eq('id', user.id)
                   .single();
-            const { role } = userObj;
+            const role = userObj?.role;
             if (role !== 'customer')
                   return {
                         redirect: {
@@ -88,7 +88,7 @@ export const getServerSideProps = async (ctx) => {
                   .from('tickets')
                   .select(`*`)
                   .eq('userId', user.id);
-            ticketList = data;
+            ticketList = data || [];
       }
 
       return { props: { ticketList } };

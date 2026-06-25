@@ -117,7 +117,7 @@ const HandlePage = ({ ticket, ticketMessagesList, ticketObj }) => {
                                                             fontWeight: 500,
                                                       }}
                                                 >
-                                                      {ticketObj.title}
+                                                      {ticketObj?.title}
                                                 </Text>
                                           </div>
                                           <div className="ticket-support-team">

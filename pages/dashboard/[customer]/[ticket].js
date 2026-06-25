@@ -145,7 +145,7 @@ const WebsiteDashboard = ({
                                                             <Text h3>
                                                                   <span>
                                                                         {
-                                                                              ticketObj.title
+                                                                              ticketObj?.title
                                                                         }
                                                                   </span>
                                                                   <EditTicket
@@ -297,7 +297,7 @@ export const getServerSideProps = async (ctx) => {
       //       .single();
 
       const { data, error } = await supabase.from('users').select(`*`);
-      customerList = data;
+      customerList = data || [];
 
       const customerIndex = customerList.findIndex(
             (x) => x.idString === customer
@@ -306,16 +306,27 @@ export const getServerSideProps = async (ctx) => {
       const customerSessionIndex = customerList.findIndex(
             (x) => x.id === user.id
       );
-      const { id } = customerList[customerIndex];
-      const { role } = customerList[customerSessionIndex];
 
-      if (role === 'customer')
+      const activeCustomerObj = customerList[customerIndex];
+      const sessionUser = customerList[customerSessionIndex];
+
+      if (sessionUser?.role === 'customer')
             return {
                   redirect: {
                         destination: '/',
                         permanent: false,
                   },
             };
+
+      if (!activeCustomerObj)
+            return {
+                  redirect: {
+                        destination: '/dashboard',
+                        permanent: false,
+                  },
+            };
+
+      const { id } = activeCustomerObj;
 
       const { data: customerTickets, error: errorOnTickets } = await supabase
             .from('tickets')
@@ -334,13 +345,13 @@ export const getServerSideProps = async (ctx) => {
             .from('ticketMessages')
             .select(`*`)
             .eq('ticketId', ticket);
-      if (data) ticketMessagesList = messagesArray;
+      if (messagesArray) ticketMessagesList = messagesArray;
 
       return {
             props: {
                   customerList,
                   customer,
-                  customerTickets,
+                  customerTickets: customerTickets || [],
                   ticket,
                   ticketMessagesList,
                   ticketObjData,

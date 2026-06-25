@@ -159,31 +159,37 @@ export const getServerSideProps = async (ctx) => {
       const {
             data: { session },
       } = await supabase.auth.getSession();
-      const { user } = session;
-      if (session) {
-            const { data: userObj, error: userError } = await supabase
-                  .from('users')
-                  .select(`email,id,role`)
-                  .eq('id', user.id)
-                  .single();
-            const { role } = userObj;
-            if (role !== 'customer')
-                  return {
-                        redirect: {
-                              destination: '/dashboard',
-                              permanent: false,
-                        },
-                  };
-            const { data, error } = await supabase.storage
-                  .from('assets')
-                  .list(`assets/${user.id}`, {
-                        limit: 100,
-                        offset: 0,
-                        sortBy: { column: 'created_at', order: 'asc' },
-                  });
+      if (!session)
+            return {
+                  redirect: {
+                        destination: '/',
+                        permanent: false,
+                  },
+            };
 
-            assetsList = data;
-      }
+      const { user } = session;
+      const { data: userObj, error: userError } = await supabase
+            .from('users')
+            .select(`email,id,role`)
+            .eq('id', user.id)
+            .single();
+      const role = userObj?.role;
+      if (role !== 'customer')
+            return {
+                  redirect: {
+                        destination: '/dashboard',
+                        permanent: false,
+                  },
+            };
+      const { data, error } = await supabase.storage
+            .from('assets')
+            .list(`assets/${user.id}`, {
+                  limit: 100,
+                  offset: 0,
+                  sortBy: { column: 'created_at', order: 'asc' },
+            });
+
+      assetsList = data || [];
 
       return { props: { assetsList, user } };
 };

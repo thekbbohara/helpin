@@ -119,7 +119,7 @@ export const getServerSideProps = async (ctx) => {
                   .from('tickets')
                   .select(`*`)
                   .eq('userId', user.id);
-            ticketList = data;
+            ticketList = data || [];
       }
 
       return { props: { ticketList } };

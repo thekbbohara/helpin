@@ -6,7 +6,7 @@ import ReactCountryFlag from 'react-country-flag';
 const CustomerList = ({ customerList, customer }) => {
       return (
             <>
-                  {customerList.length > 0 ? (
+                  {customerList?.length > 0 ? (
                         <div className="customers-tab">
                               {customerList.map((c, key) => (
                                     <div

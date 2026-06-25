@@ -5,7 +5,7 @@ import Link from 'next/link';
 const TicketList = ({ customerTickets, customer }) => {
       return (
             <>
-                  {customerTickets.map((tik, key) => (
+                  {customerTickets?.map((tik, key) => (
                         <div className="ticket-card" key={key}>
                               <Link
                                     href={

@@ -11,7 +11,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 const ChatMessages = ({ messagesList, publicChat }) => {
       return (
             <div>
-                  {messagesList.map((m, key) => (
+                  {messagesList?.map((m, key) => (
                         <div
                               className={
                                     publicChat
