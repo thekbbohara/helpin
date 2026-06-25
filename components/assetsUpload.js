@@ -17,6 +17,11 @@ export default function UploadAvatar({ uid, url, size, onUpload }) {
             'image/webp',
             'application/pdf',
             'text/csv',
+            'text/plain',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       ];
 
       const uploadAvatar = async (event) => {
@@ -33,13 +38,12 @@ export default function UploadAvatar({ uid, url, size, onUpload }) {
                         alert('File is too large. Maximum size is 10 MB.');
                         throw new Error('File too large');
                   }
-                  if (
-                        file.type &&
-                        !ALLOWED.includes(file.type) &&
-                        !file.name.toLowerCase().endsWith('.csv')
-                  ) {
+                  const nameAllowed = /\.(csv|txt|pdf|docx?|xlsx?)$/i.test(
+                        file.name
+                  );
+                  if (file.type && !ALLOWED.includes(file.type) && !nameAllowed) {
                         alert(
-                              'Unsupported file type. Allowed: images, PDF, CSV.'
+                              'Unsupported file type. Allowed: images, PDF, Word, Excel, CSV, TXT.'
                         );
                         throw new Error('Unsupported file type');
                   }
@@ -121,7 +125,7 @@ export default function UploadAvatar({ uid, url, size, onUpload }) {
                               }}
                               type="file"
                               id="single"
-                              accept="image/*, application/pdf, .csv"
+                              accept="image/*,application/pdf,.csv,.txt,.doc,.docx,.xls,.xlsx"
                               onChange={uploadAvatar}
                               disabled={uploading}
                         />

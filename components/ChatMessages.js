@@ -1,11 +1,8 @@
 import { Text } from '@geist-ui/core';
 import moment from 'moment';
-import { Document, Page, pdfjs } from 'react-pdf';
 import { HiDocuText } from '../config/icons';
 import { GrDocumentCsv } from 'react-icons/gr';
 import { contentTypeCheck } from '../config/functions';
-
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
 const ASSET_BASE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/assets`;
 
@@ -35,11 +32,17 @@ const ChatMessages = ({ messagesList, publicChat }) => {
                                     )}
                                     {contentTypeCheck(m.type) === 'image' && (
                                           <div className="image">
-                                                <img
-                                                      alt={m.message}
-                                                      className="chat-image"
-                                                      src={`${ASSET_BASE}/${m.filePath}`}
-                                                />
+                                                <a
+                                                      href={`${ASSET_BASE}/${m.filePath}`}
+                                                      target="_blank"
+                                                      rel="noreferrer"
+                                                >
+                                                      <img
+                                                            alt={m.message}
+                                                            className="chat-image"
+                                                            src={`${ASSET_BASE}/${m.filePath}`}
+                                                      />
+                                                </a>
                                                 <div className="image-alt">
                                                       <Text
                                                             small
@@ -51,26 +54,32 @@ const ChatMessages = ({ messagesList, publicChat }) => {
                                           </div>
                                     )}
                                     {contentTypeCheck(m.type) === 'doc' && (
-                                          <div className="message pdf-message">
+                                          <a
+                                                className="message pdf-message"
+                                                href={`${ASSET_BASE}/${m.filePath}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                download={m.message}
+                                          >
                                                 <div className="chat-attach">
                                                       <HiDocuText />
                                                       <span>{m.message}</span>
-                                                      {/* <Document
-                                                      file={`https://cstvtjojcqfjvuiwcijp.supabase.co/storage/v1/object/public/assets/${m.filePath}`}
-                                                      width="100%"
-                                                >
-                                                      <Page pageNumber={1} />
-                                                </Document> */}
                                                 </div>
-                                          </div>
+                                          </a>
                                     )}
                                     {contentTypeCheck(m.type) === 'text' && (
-                                          <div className="message pdf-message">
+                                          <a
+                                                className="message pdf-message"
+                                                href={`${ASSET_BASE}/${m.filePath}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                download={m.message}
+                                          >
                                                 <div className="chat-attach">
                                                       <GrDocumentCsv />
                                                       <span>{m.message}</span>
                                                 </div>
-                                          </div>
+                                          </a>
                                     )}
                                     <br />
                                     <Text

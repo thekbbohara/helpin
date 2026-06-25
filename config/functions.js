@@ -11,10 +11,11 @@ export const randomString = function (length, chars) {
 };
 
 export const contentTypeCheck = function (str, pattern) {
-      const [type] = str.split('/');
+      if (!str) return '';
+      const [type, subtype] = str.split('/');
 
       if (type === 'image') return 'image';
-      if (type === 'csv') return 'csv';
+      if (type === 'text' || subtype === 'csv') return 'text';
       if (type === 'application') return 'doc';
 
       return '';
