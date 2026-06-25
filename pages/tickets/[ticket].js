@@ -20,24 +20,31 @@ const HandlePage = ({ ticket, ticketMessagesList, ticketObj }) => {
       const [messagesList, setMessagesList] = useState(ticketMessagesList);
       const session = useSession();
 
+      const appendMessage = (msg) =>
+            setMessagesList((current) =>
+                  current.some((m) => m.id === msg.id)
+                        ? current
+                        : [...current, msg]
+            );
+
       const sendMessage = async (e) => {
             const { user } = session;
 
-            if (user && message !== '' && e.key === 'Enter') {
+            if (user && message.trim() !== '' && e.key === 'Enter') {
+                  const text = message;
+                  setMessage('');
                   const { data: newMessage, error } = await supabase
                         .from('ticketMessages')
                         .upsert({
                               id: randomString(12, '#'),
-                              message,
+                              message: text,
                               type: 'text',
                               userId: user.id,
                               userType: 'customer',
                               ticketId: ticket,
                         })
                         .select();
-                  // if (!error) setMessagesList([...messagesList, ...newMessage]);
-
-                  setMessage('');
+                  if (!error && newMessage?.[0]) appendMessage(newMessage[0]);
             }
       };
 
@@ -57,9 +64,7 @@ const HandlePage = ({ ticket, ticketMessagesList, ticketObj }) => {
                               filePath,
                         })
                         .select();
-                  // if (!error) setMessagesList([...messagesList, ...newMessage]);
-
-                  setMessage('');
+                  if (!error && newMessage?.[0]) appendMessage(newMessage[0]);
             }
       };
 
@@ -85,7 +90,11 @@ const HandlePage = ({ ticket, ticketMessagesList, ticketObj }) => {
                         filter: `ticketId=eq.${ticket}`,
                   },
                   (payload) =>
-                        setMessagesList((current) => [...current, payload.new])
+                        setMessagesList((current) =>
+                              current.some((m) => m.id === payload.new.id)
+                                    ? current
+                                    : [...current, payload.new]
+                        )
             );
 
             channel.subscribe(async (status) => {

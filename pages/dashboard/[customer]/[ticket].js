@@ -4,6 +4,7 @@ import {
       createServerSupabaseClient,
 } from '@supabase/auth-helpers-nextjs';
 import { useSession } from '@supabase/auth-helpers-react';
+import Head from 'next/head';
 import Link from 'next/link';
 import Empty from '../../../components/empty';
 import Layout from '../../../components/layout';
@@ -37,24 +38,31 @@ const WebsiteDashboard = ({
 
       const activeCustomerObj = customerList[cIndex];
 
+      const appendMessage = (msg) =>
+            setMessagesList((current) =>
+                  current.some((m) => m.id === msg.id)
+                        ? current
+                        : [...current, msg]
+            );
+
       const sendMessage = async (e) => {
             const { user } = session;
 
-            if (user && message !== '' && e.key === 'Enter') {
+            if (user && message.trim() !== '' && e.key === 'Enter') {
+                  const text = message;
+                  setMessage('');
                   const { data: newMessage, error } = await supabase
                         .from('ticketMessages')
                         .insert({
                               id: randomString(12, '#'),
-                              message,
+                              message: text,
                               type: 'text',
                               userId: user.id,
                               userType: 'owner',
                               ticketId: ticket,
                         })
                         .select();
-                  // if (!error) setMessagesList([...messagesList, ...newMessage]);
-
-                  setMessage('');
+                  if (!error && newMessage?.[0]) appendMessage(newMessage[0]);
             }
       };
 
@@ -77,13 +85,12 @@ const WebsiteDashboard = ({
                         table: 'ticketMessages',
                         filter: `ticketId=eq.${ticket}`,
                   },
-                  (payload) => {
-                        setMessagesList((current) => [...current, payload.new]);
-                        // if (messagesRef.current) {
-                        //       messagesRef.current.scrollTop =
-                        //             messagesRef.current.scrollHeight;
-                        // }
-                  }
+                  (payload) =>
+                        setMessagesList((current) =>
+                              current.some((m) => m.id === payload.new.id)
+                                    ? current
+                                    : [...current, payload.new]
+                        )
             );
 
             channel.subscribe(async (status) => {
@@ -111,9 +118,7 @@ const WebsiteDashboard = ({
                               filePath,
                         })
                         .select();
-                  // if (!error) setMessagesList([...messagesList, ...newMessage]);
-
-                  setMessage('');
+                  if (!error && newMessage?.[0]) appendMessage(newMessage[0]);
             }
       };
 

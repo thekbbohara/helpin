@@ -7,30 +7,23 @@ import { useState } from 'react';
 import AuthBox from '../../components/authBox';
 import MiniSideNav from '../../components/miniSidebar';
 
-const CustomerSettings = ({ ticketList }) => {
+const CustomerSettings = ({ userObj }) => {
       const session = useSession();
       const router = useRouter();
-      const [loading, setLoading] = useState(false);
       const supabase = useSupabaseClient();
+      const [signingOut, setSigningOut] = useState(false);
 
-      const createNewTicket = async () => {
-            if (session) {
-                  setLoading(true);
-                  const { user } = session;
-                  const { data: newTicket, error } = await supabase
-                        .from('tickets')
-                        .upsert({ userId: user.id, id: randomString(6, '#') })
-                        .select();
-                  if (!error) router.push(`/tickets/${newTicket[0].id}`);
-                  setLoading(false);
-            }
+      const signOut = async () => {
+            setSigningOut(true);
+            await supabase.auth.signOut();
+            router.push('/');
       };
 
       return (
             <div className="dashboard">
                   <div>
                         <Head>
-                              <title>Chat</title>
+                              <title>Settings</title>
                               <link rel="icon" href="/favicon.png" />
                         </Head>
 
@@ -44,10 +37,60 @@ const CustomerSettings = ({ ticketList }) => {
                                     <MiniSideNav />
 
                                     <div className="chat-box">
-                                          <Text h4 style={{ fontWeight: 500 }}>
-                                                Setting Page
-                                          </Text>
-                                          Work in progress
+                                          <div className="settings-page">
+                                                <Text h3 style={{ margin: 0 }}>
+                                                      Settings
+                                                </Text>
+                                                <Text
+                                                      type="secondary"
+                                                      small
+                                                      style={{ marginTop: 4 }}
+                                                >
+                                                      Manage your account.
+                                                </Text>
+
+                                                <div className="settings-card">
+                                                      <div className="settings-row">
+                                                            <span className="settings-label">
+                                                                  Email
+                                                            </span>
+                                                            <span className="settings-value">
+                                                                  {userObj?.email ||
+                                                                        session
+                                                                              .user
+                                                                              .email}
+                                                            </span>
+                                                      </div>
+                                                      <div className="settings-row">
+                                                            <span className="settings-label">
+                                                                  Account ID
+                                                            </span>
+                                                            <span className="settings-value">
+                                                                  {userObj?.idString ||
+                                                                        '—'}
+                                                            </span>
+                                                      </div>
+                                                      <div className="settings-row">
+                                                            <span className="settings-label">
+                                                                  Role
+                                                            </span>
+                                                            <span className="settings-value">
+                                                                  {userObj?.role ||
+                                                                        'customer'}
+                                                            </span>
+                                                      </div>
+                                                </div>
+
+                                                <Button
+                                                      type="error"
+                                                      ghost
+                                                      scale={2 / 3}
+                                                      loading={signingOut}
+                                                      onClick={signOut}
+                                                >
+                                                      Sign out
+                                                </Button>
+                                          </div>
                                     </div>
                               </div>
                         )}
@@ -62,34 +105,31 @@ export const getServerSideProps = async (ctx) => {
       // Create authenticated Supabase Client
       const supabase = createServerSupabaseClient(ctx);
       // Check if we have a session
-
-      let ticketList = [];
       const {
             data: { session },
       } = await supabase.auth.getSession();
-      if (session) {
-            const { user } = session;
+      if (!session)
+            return {
+                  redirect: {
+                        destination: '/',
+                        permanent: false,
+                  },
+            };
 
-            const { data: userObj, error: userError } = await supabase
-                  .from('users')
-                  .select(`email,id,role`)
-                  .eq('id', user.id)
-                  .single();
-            const role = userObj?.role;
-            if (role !== 'customer')
-                  return {
-                        redirect: {
-                              destination: '/dashboard',
-                              permanent: false,
-                        },
-                  };
+      const { user } = session;
+      const { data: userObj } = await supabase
+            .from('users')
+            .select(`email,idString,role`)
+            .eq('id', user.id)
+            .single();
 
-            const { data, error } = await supabase
-                  .from('tickets')
-                  .select(`*`)
-                  .eq('userId', user.id);
-            ticketList = data || [];
-      }
+      if (userObj?.role && userObj.role !== 'customer')
+            return {
+                  redirect: {
+                        destination: '/dashboard',
+                        permanent: false,
+                  },
+            };
 
-      return { props: { ticketList } };
+      return { props: { userObj: userObj || null } };
 };
