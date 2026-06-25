@@ -24,6 +24,8 @@ const HandlePage = ({ ticket, ticketMessagesList, hasMore: initialHasMore, ticke
       const [hasMore, setHasMore] = useState(initialHasMore);
       const [loadingMore, setLoadingMore] = useState(false);
       const session = useSession();
+      const myIdRef = useRef(null);
+      myIdRef.current = session?.user?.id;
 
       const appendMessage = (msg) => {
             stickBottomRef.current = true;
@@ -121,6 +123,7 @@ const HandlePage = ({ ticket, ticketMessagesList, hasMore: initialHasMore, ticke
                         filter: `ticketId=eq.${ticket}`,
                   },
                   (payload) => {
+                        if (payload.new.userId === myIdRef.current) return;
                         stickBottomRef.current = true;
                         setMessagesList((current) =>
                               current.some((m) => m.id === payload.new.id)
@@ -151,15 +154,26 @@ const HandlePage = ({ ticket, ticketMessagesList, hasMore: initialHasMore, ticke
                               <MiniSideNav />
 
                               <div className="chat-box">
-                                    <div className="chat-head">
-                                          <div className="ticket-meta">
+                                    <div className="chat-head support-head">
+                                          <div className="support-avatar">P</div>
+                                          <div className="support-meta">
                                                 <Text
-                                                      h3
+                                                      b
                                                       style={{
-                                                            fontWeight: 500,
+                                                            margin: 0,
+                                                            fontSize: 16,
                                                       }}
                                                 >
-                                                      {ticketObj?.title}
+                                                      Peridot Support
+                                                </Text>
+                                                <Text
+                                                      small
+                                                      type="secondary"
+                                                      style={{ margin: 0 }}
+                                                >
+                                                      {ticketObj?.title
+                                                            ? ticketObj.title
+                                                            : `Ticket #${ticket}`}
                                                 </Text>
                                           </div>
                                     </div>

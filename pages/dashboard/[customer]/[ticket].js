@@ -38,6 +38,8 @@ const WebsiteDashboard = ({
       const [hasMore, setHasMore] = useState(initialHasMore);
       const [loadingMore, setLoadingMore] = useState(false);
       const session = useSession();
+      const myIdRef = useRef(null);
+      myIdRef.current = session?.user?.id;
       const [ticketObj, setTicketObj] = useState(ticketObjData);
 
       const cIndex = customerList.findIndex((x) => x.idString === customer);
@@ -122,6 +124,7 @@ const WebsiteDashboard = ({
                         filter: `ticketId=eq.${ticket}`,
                   },
                   (payload) => {
+                        if (payload.new.userId === myIdRef.current) return;
                         stickBottomRef.current = true;
                         setMessagesList((current) =>
                               current.some((m) => m.id === payload.new.id)
