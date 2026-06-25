@@ -490,10 +490,10 @@ input {
                   align-items: center;
                   justify-content: center;
                   cursor: pointer;
-                  color: #666;
+                  color: var(--body);
                   transition: color 0.15s ease;
                   &:hover {
-                        color: #244ba9;
+                        color: var(--ink);
                   }
                   svg {
                         width: 22px;
@@ -515,7 +515,7 @@ input {
             .message {
                   background-color: var(--ink) !important;
                   padding: 9px 16px;
-                  color: var(--on-primary);
+                  color: var(--on-primary) !important;
                   border-radius: 14px;
                   border-bottom-right-radius: 4px !important;
                   overflow-wrap: break-word;
@@ -661,6 +661,33 @@ input {
 
 .btn {
       border-radius: 8px !important;
+}
+
+.file-thumb {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--hairline-strong);
+      border-radius: 8px;
+      overflow: hidden;
+      color: var(--body);
+      img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+      }
+}
+
+.file-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      a {
+            color: var(--text-link);
+            font-size: 14px;
+      }
 }
 
 .settings-page {
