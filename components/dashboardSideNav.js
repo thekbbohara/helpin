@@ -28,7 +28,7 @@ const DashboardSideNav = () => {
                                           placement="right"
                                           type="dark"
                                     >
-                                          <Link href="/dashboard">
+                                          <Link href="/dashboard/tickets">
                                                 <svg
                                                       xmlns="http://www.w3.org/2000/svg"
                                                       fill="none"

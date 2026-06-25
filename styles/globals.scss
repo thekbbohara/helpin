@@ -687,6 +687,88 @@ input {
       border-radius: 8px !important;
 }
 
+.queue-page {
+      padding: 28px 32px;
+      height: 100vh;
+      overflow-y: auto;
+      width: 100%;
+
+      .queue-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+      }
+
+      .queue-toolbar {
+            display: grid;
+            grid-template-columns: 1.6fr repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+      }
+
+      .queue-list {
+            border: 1px solid var(--hairline-strong);
+            border-radius: 12px;
+            overflow: hidden;
+      }
+
+      .queue-row {
+            display: grid;
+            grid-template-columns: 2.4fr 1.2fr 1fr 1fr 1.4fr 1fr;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--hairline);
+            font-size: 14px;
+            color: var(--ink);
+            &:last-child {
+                  border-bottom: none;
+            }
+      }
+
+      a.queue-row:hover {
+            background: var(--surface-strong);
+      }
+
+      .queue-head {
+            background: var(--canvas-soft, #fafafa);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--muted);
+            font-weight: 600;
+      }
+
+      .queue-title {
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            .queue-id {
+                  font-size: 11px;
+                  color: var(--muted);
+                  font-weight: 400;
+            }
+      }
+
+      .queue-muted {
+            color: var(--body);
+      }
+}
+
+@media (max-width: 900px) {
+      .queue-page .queue-toolbar {
+            grid-template-columns: 1fr 1fr;
+      }
+      .queue-page .queue-row {
+            grid-template-columns: 2fr 1fr 1fr;
+            span:nth-child(5),
+            span:nth-child(6) {
+                  display: none;
+            }
+      }
+}
+
 .ticket-controls {
       margin-top: 16px;
       padding-top: 16px;
