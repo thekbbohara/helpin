@@ -167,24 +167,6 @@ const WebsiteDashboard = ({
                                                                   />
                                                             </Text>
                                                       </div>
-                                                      <div className="ticket-support-team">
-                                                            <Avatar.Group
-                                                                  count={2}
-                                                            >
-                                                                  <Avatar
-                                                                        src="https://static.generated.photos/vue-static/home/hero/3.png"
-                                                                        stacked
-                                                                  />
-                                                                  <Avatar
-                                                                        src="https://static.generated.photos/vue-static/home/hero/5.png"
-                                                                        stacked
-                                                                  />
-                                                                  <Avatar
-                                                                        src="https://static.generated.photos/vue-static/home/hero/6.png"
-                                                                        stacked
-                                                                  />
-                                                            </Avatar.Group>
-                                                      </div>
                                                 </div>
                                                 <div
                                                       style={{

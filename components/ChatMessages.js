@@ -1,12 +1,13 @@
 import { Text } from '@geist-ui/core';
 import moment from 'moment';
-import Image from 'next/image';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { HiDocuText } from '../config/icons';
 import { GrDocumentCsv } from 'react-icons/gr';
 import { contentTypeCheck } from '../config/functions';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+
+const ASSET_BASE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/assets`;
 
 const ChatMessages = ({ messagesList, publicChat }) => {
       return (
@@ -34,12 +35,10 @@ const ChatMessages = ({ messagesList, publicChat }) => {
                                     )}
                                     {contentTypeCheck(m.type) === 'image' && (
                                           <div className="image">
-                                                <Image
+                                                <img
                                                       alt={m.message}
-                                                      src={`https://cstvtjojcqfjvuiwcijp.supabase.co/storage/v1/object/public/assets/${m.filePath}`}
-                                                      width={283}
-                                                      height={64}
-                                                      layout="responsive"
+                                                      className="chat-image"
+                                                      src={`${ASSET_BASE}/${m.filePath}`}
                                                 />
                                                 <div className="image-alt">
                                                       <Text
