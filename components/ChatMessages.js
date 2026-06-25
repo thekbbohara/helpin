@@ -23,14 +23,16 @@ const ChatMessages = ({ messagesList, publicChat }) => {
                               key={key}
                         >
                               <div className="message-line">
-                                    {m.type === 'text' && (
+                                    {m.type === 'text' && !m.filePath && (
                                           <div className="message">
                                                 <Text mb={0} mt={0}>
                                                       {m.message}
                                                 </Text>
                                           </div>
                                     )}
-                                    {contentTypeCheck(m.type) === 'image' && (
+                                    {m.filePath &&
+                                          contentTypeCheck(m.type) ===
+                                                'image' && (
                                           <div className="image">
                                                 <a
                                                       href={`${ASSET_BASE}/${m.filePath}`}
@@ -53,34 +55,41 @@ const ChatMessages = ({ messagesList, publicChat }) => {
                                                 </div>
                                           </div>
                                     )}
-                                    {contentTypeCheck(m.type) === 'doc' && (
-                                          <a
-                                                className="message pdf-message"
-                                                href={`${ASSET_BASE}/${m.filePath}`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                download={m.message}
-                                          >
-                                                <div className="chat-attach">
-                                                      <HiDocuText />
-                                                      <span>{m.message}</span>
-                                                </div>
-                                          </a>
-                                    )}
-                                    {contentTypeCheck(m.type) === 'text' && (
-                                          <a
-                                                className="message pdf-message"
-                                                href={`${ASSET_BASE}/${m.filePath}`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                download={m.message}
-                                          >
-                                                <div className="chat-attach">
-                                                      <GrDocumentCsv />
-                                                      <span>{m.message}</span>
-                                                </div>
-                                          </a>
-                                    )}
+                                    {m.filePath &&
+                                          contentTypeCheck(m.type) === 'doc' && (
+                                                <a
+                                                      className="message pdf-message"
+                                                      href={`${ASSET_BASE}/${m.filePath}`}
+                                                      target="_blank"
+                                                      rel="noreferrer"
+                                                      download={m.message}
+                                                >
+                                                      <div className="chat-attach">
+                                                            <HiDocuText />
+                                                            <span>
+                                                                  {m.message}
+                                                            </span>
+                                                      </div>
+                                                </a>
+                                          )}
+                                    {m.filePath &&
+                                          contentTypeCheck(m.type) ===
+                                                'text' && (
+                                                <a
+                                                      className="message pdf-message"
+                                                      href={`${ASSET_BASE}/${m.filePath}`}
+                                                      target="_blank"
+                                                      rel="noreferrer"
+                                                      download={m.message}
+                                                >
+                                                      <div className="chat-attach">
+                                                            <GrDocumentCsv />
+                                                            <span>
+                                                                  {m.message}
+                                                            </span>
+                                                      </div>
+                                                </a>
+                                          )}
                                     <br />
                                     <Text
                                           style={{ fontSize: 10 }}
