@@ -1,47 +1,169 @@
-import { Grid, Text } from '@geist-ui/core';
+import { Input, Text } from '@geist-ui/core';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { useSession } from '@supabase/auth-helpers-react';
+import Head from 'next/head';
 import Link from 'next/link';
-import Empty from '../components/empty';
-import Layout from '../components/layout';
+import moment from 'moment';
+import { useMemo, useState } from 'react';
 import DashboardSideNav from '../components/dashboardSideNav';
 
-const Users = () => {
-      const session = useSession();
+const Customers = ({ customers, counts }) => {
+      const [search, setSearch] = useState('');
+
+      const visible = useMemo(() => {
+            const q = search.trim().toLowerCase();
+            if (!q) return customers;
+            return customers.filter((c) =>
+                  [c.idString, c.email, c.ipInfo?.country]
+                        .filter(Boolean)
+                        .join(' ')
+                        .toLowerCase()
+                        .includes(q)
+            );
+      }, [customers, search]);
+
       return (
             <div className="dashboard">
+                  <Head>
+                        <title>Customers</title>
+                        <link rel="icon" href="/favicon.png" />
+                  </Head>
                   <div className="chat-container">
-                        <DashboardSideNav active="users" />
+                        <DashboardSideNav active="customers" />
+                        <div className="queue-page">
+                              <div className="queue-header">
+                                    <div>
+                                          <Text h3 style={{ margin: 0 }}>
+                                                Customers
+                                          </Text>
+                                          <Text type="secondary" small>
+                                                {visible.length} of{' '}
+                                                {customers.length}
+                                          </Text>
+                                    </div>
+                              </div>
 
-                        <Grid.Container gap={2}>
-                              <Grid xs={20} md={20}>
-                                    <Text h2>users</Text>
-                              </Grid>
-                        </Grid.Container>
+                              <div className="queue-toolbar single">
+                                    <Input
+                                          placeholder="Search by id, email, country…"
+                                          value={search}
+                                          width="100%"
+                                          onChange={(e) =>
+                                                setSearch(e.target.value)
+                                          }
+                                          clearable
+                                    />
+                              </div>
+
+                              <div className="queue-list">
+                                    <div
+                                          className="queue-row queue-head"
+                                          style={{
+                                                gridTemplateColumns:
+                                                      '1.6fr 1.4fr 1fr 1fr 1fr',
+                                          }}
+                                    >
+                                          <span>Customer</span>
+                                          <span>Email</span>
+                                          <span>Location</span>
+                                          <span>Tickets</span>
+                                          <span>Joined</span>
+                                    </div>
+                                    {visible.map((c) => {
+                                          const cnt = counts[c.id] || {
+                                                total: 0,
+                                                open: 0,
+                                          };
+                                          return (
+                                                <Link
+                                                      key={c.id}
+                                                      href={`/dashboard/${c.idString}`}
+                                                      className="queue-row"
+                                                      style={{
+                                                            gridTemplateColumns:
+                                                                  '1.6fr 1.4fr 1fr 1fr 1fr',
+                                                      }}
+                                                >
+                                                      <span className="queue-title">
+                                                            {c.idString}
+                                                      </span>
+                                                      <span className="queue-muted">
+                                                            {c.email || '—'}
+                                                      </span>
+                                                      <span className="queue-muted">
+                                                            {c.ipInfo?.country ||
+                                                                  '—'}
+                                                      </span>
+                                                      <span>
+                                                            {cnt.open} open
+                                                            <span className="queue-id">
+                                                                  {' '}
+                                                                  / {cnt.total}{' '}
+                                                                  total
+                                                            </span>
+                                                      </span>
+                                                      <span className="queue-muted">
+                                                            {moment(
+                                                                  c.created_at
+                                                            ).format(
+                                                                  'DD MMM YYYY'
+                                                            )}
+                                                      </span>
+                                                </Link>
+                                          );
+                                    })}
+                                    {visible.length === 0 && (
+                                          <Text
+                                                type="secondary"
+                                                style={{ padding: 24 }}
+                                          >
+                                                No customers found.
+                                          </Text>
+                                    )}
+                              </div>
+                        </div>
                   </div>
             </div>
       );
 };
 
-export default Users;
+export default Customers;
 
 export const getServerSideProps = async (ctx) => {
-      // Create authenticated Supabase Client
       const supabase = createServerSupabaseClient(ctx);
-      // Check if we have a session
       const {
             data: { session },
       } = await supabase.auth.getSession();
       if (!session)
-            return {
-                  redirect: {
-                        destination: '/',
-                        permanent: false,
-                  },
-            };
+            return { redirect: { destination: '/', permanent: false } };
 
-      // Retrieve provider_token & logged in user's third-party id from metadata
       const { user } = session;
+      const { data: me } = await supabase
+            .from('users')
+            .select(`role`)
+            .eq('id', user.id)
+            .single();
+      if (!me || me.role === 'customer')
+            return { redirect: { destination: '/', permanent: false } };
 
-      return { props: { user } };
+      const { data: customers } = await supabase
+            .from('users')
+            .select(`id,idString,email,ipInfo,created_at`)
+            .eq('role', 'customer')
+            .order('created_at', { ascending: false });
+
+      const { data: tickets } = await supabase
+            .from('tickets')
+            .select(`userId,status`);
+
+      const counts = {};
+      (tickets || []).forEach((t) => {
+            const c = (counts[t.userId] = counts[t.userId] || {
+                  total: 0,
+                  open: 0,
+            });
+            c.total += 1;
+            if (t.status === 'open' || t.status === 'pending') c.open += 1;
+      });
+
+      return { props: { customers: customers || [], counts } };
 };

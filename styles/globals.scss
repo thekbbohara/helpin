@@ -756,9 +756,72 @@ input {
       }
 }
 
+.queue-toolbar.single {
+      display: block;
+}
+
+.team-invite {
+      display: grid;
+      grid-template-columns: 1fr 130px 130px;
+      gap: 10px;
+      align-items: center;
+      max-width: 640px;
+}
+
+.integration-card {
+      border: 1px solid var(--hairline-strong);
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin: 12px 0;
+      max-width: 720px;
+      .integration-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+      }
+      .copy-btn {
+            border: 1px solid var(--hairline-strong);
+            background: var(--canvas);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            &:hover {
+                  border-color: var(--ink);
+            }
+      }
+      .snippet {
+            background: var(--ink);
+            color: #fff;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 12px 0 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+      }
+}
+
+.integration-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+      max-width: 720px;
+      .integration-tile {
+            border: 1px solid var(--hairline-strong);
+            border-radius: 12px;
+            padding: 16px;
+      }
+}
+
 @media (max-width: 900px) {
       .queue-page .queue-toolbar {
             grid-template-columns: 1fr 1fr;
+      }
+      .team-invite {
+            grid-template-columns: 1fr;
       }
       .queue-page .queue-row {
             grid-template-columns: 2fr 1fr 1fr;
