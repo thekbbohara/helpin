@@ -19,6 +19,8 @@ import { HiEdit } from '../../../config/icons';
 import EditTicket from '../../../components/editTicket';
 import UploadAvatar from '../../../components/assetsUpload';
 
+const PAGE_SIZE = 30;
+
 const WebsiteDashboard = ({
       customer,
       ticket,
@@ -26,11 +28,15 @@ const WebsiteDashboard = ({
       customerTickets,
       ticketObjData,
       ticketMessagesList,
+      hasMore: initialHasMore,
 }) => {
       const messagesRef = useRef(null);
+      const stickBottomRef = useRef(true);
       const [supabase] = useState(() => createBrowserSupabaseClient());
       const [message, setMessage] = useState('');
       const [messagesList, setMessagesList] = useState(ticketMessagesList);
+      const [hasMore, setHasMore] = useState(initialHasMore);
+      const [loadingMore, setLoadingMore] = useState(false);
       const session = useSession();
       const [ticketObj, setTicketObj] = useState(ticketObjData);
 
@@ -38,12 +44,42 @@ const WebsiteDashboard = ({
 
       const activeCustomerObj = customerList[cIndex];
 
-      const appendMessage = (msg) =>
+      const agents = customerList.filter(
+            (u) => u.role && u.role !== 'customer'
+      );
+
+      const appendMessage = (msg) => {
+            stickBottomRef.current = true;
             setMessagesList((current) =>
                   current.some((m) => m.id === msg.id)
                         ? current
                         : [...current, msg]
             );
+      };
+
+      const loadOlder = async () => {
+            if (loadingMore || !hasMore) return;
+            setLoadingMore(true);
+            stickBottomRef.current = false;
+            const el = messagesRef.current;
+            const prevHeight = el ? el.scrollHeight : 0;
+            const { data } = await supabase
+                  .from('ticketMessages')
+                  .select('*')
+                  .eq('ticketId', ticket)
+                  .order('created_at', { ascending: false })
+                  .range(messagesList.length, messagesList.length + PAGE_SIZE - 1);
+            const older = (data || []).reverse();
+            setMessagesList((cur) => {
+                  const ids = new Set(cur.map((m) => m.id));
+                  return [...older.filter((m) => !ids.has(m.id)), ...cur];
+            });
+            setHasMore(older.length === PAGE_SIZE);
+            setLoadingMore(false);
+            requestAnimationFrame(() => {
+                  if (el) el.scrollTop = el.scrollHeight - prevHeight;
+            });
+      };
 
       const sendMessage = async (e) => {
             const { user } = session;
@@ -67,9 +103,9 @@ const WebsiteDashboard = ({
       };
 
       useEffect(() => {
-            if (messagesRef.current) {
+            if (stickBottomRef.current && messagesRef.current) {
                   messagesRef.current.scrollTop =
-                        messagesRef.current.scrollHeight + 400;
+                        messagesRef.current.scrollHeight;
             }
       }, [messagesList]);
       // Load initial data and set up listeners
@@ -85,12 +121,14 @@ const WebsiteDashboard = ({
                         table: 'ticketMessages',
                         filter: `ticketId=eq.${ticket}`,
                   },
-                  (payload) =>
+                  (payload) => {
+                        stickBottomRef.current = true;
                         setMessagesList((current) =>
                               current.some((m) => m.id === payload.new.id)
                                     ? current
                                     : [...current, payload.new]
-                        )
+                        );
+                  }
             );
 
             channel.subscribe(async (status) => {
@@ -175,7 +213,20 @@ const WebsiteDashboard = ({
                                                             overflowY: 'scroll',
                                                       }}
                                                       ref={messagesRef}
+                                                      onScroll={(e) => {
+                                                            if (
+                                                                  e.target
+                                                                        .scrollTop <
+                                                                  80
+                                                            )
+                                                                  loadOlder();
+                                                      }}
                                                 >
+                                                      {loadingMore && (
+                                                            <div className="chat-loading-more">
+                                                                  Loading…
+                                                            </div>
+                                                      )}
                                                       <ChatMessages
                                                             publicChat={false}
                                                             messagesList={
@@ -245,6 +296,9 @@ const WebsiteDashboard = ({
                                                 activeCustomerObj={
                                                       activeCustomerObj
                                                 }
+                                                ticketObj={ticketObj}
+                                                agents={agents}
+                                                onTicketUpdate={setTicketObj}
                                           />
                                     </Grid>
                               </Grid.Container>
@@ -328,11 +382,14 @@ export const getServerSideProps = async (ctx) => {
 
       let ticketMessagesList = [];
 
-      const { data: messagesArray, error: errorMessages } = await supabase
+      const { data: messagesArray, count } = await supabase
             .from('ticketMessages')
-            .select(`*`)
-            .eq('ticketId', ticket);
-      if (messagesArray) ticketMessagesList = messagesArray;
+            .select(`*`, { count: 'exact' })
+            .eq('ticketId', ticket)
+            .order('created_at', { ascending: false })
+            .range(0, 29);
+      if (messagesArray) ticketMessagesList = messagesArray.reverse();
+      const hasMore = (count || 0) > 30;
 
       return {
             props: {
@@ -341,6 +398,7 @@ export const getServerSideProps = async (ctx) => {
                   customerTickets: customerTickets || [],
                   ticket,
                   ticketMessagesList,
+                  hasMore,
                   ticketObjData,
             },
       };

@@ -663,6 +663,83 @@ input {
       border-radius: 8px !important;
 }
 
+.ticket-controls {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--hairline);
+      .control-label {
+            display: block;
+            margin: 12px 0 4px;
+      }
+      .sla-note {
+            display: block;
+            margin-top: 12px;
+            color: var(--accent-warning, #ab6400);
+      }
+}
+
+.ticket-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+}
+
+.status-badge,
+.priority-badge {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      line-height: 1.5;
+}
+.status-badge {
+      background: var(--surface-strong);
+      color: var(--body);
+}
+.status-open {
+      background: #e6f4ea;
+      color: #16a34a;
+}
+.status-pending {
+      background: #fdf0d5;
+      color: #ab6400;
+}
+.status-resolved {
+      background: #eef0f3;
+      color: #60646c;
+}
+.status-closed {
+      background: #f0f0f3;
+      color: #999999;
+}
+.priority-badge {
+      background: #fdeaea;
+      color: #c0392b;
+}
+.priority-high {
+      background: #fdeaea;
+      color: #c0392b;
+}
+.priority-urgent {
+      background: #c0392b;
+      color: #fff;
+}
+.priority-low {
+      background: #eef0f3;
+      color: #60646c;
+}
+
+.chat-loading-more {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px 0;
+}
+
 .file-thumb {
       display: inline-flex;
       align-items: center;

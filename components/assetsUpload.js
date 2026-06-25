@@ -9,15 +9,41 @@ export default function UploadAvatar({ uid, url, size, onUpload }) {
       const [avatarUrl, setAvatarUrl] = useState(null);
       const [uploading, setUploading] = useState(false);
 
+      const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
+      const ALLOWED = [
+            'image/png',
+            'image/jpeg',
+            'image/gif',
+            'image/webp',
+            'application/pdf',
+            'text/csv',
+      ];
+
       const uploadAvatar = async (event) => {
             try {
                   setUploading(true);
 
                   if (!event.target.files || event.target.files.length === 0) {
-                        throw new Error('You must select an image to upload.');
+                        throw new Error('You must select a file to upload.');
                   }
 
                   const file = event.target.files[0];
+
+                  if (file.size > MAX_BYTES) {
+                        alert('File is too large. Maximum size is 10 MB.');
+                        throw new Error('File too large');
+                  }
+                  if (
+                        file.type &&
+                        !ALLOWED.includes(file.type) &&
+                        !file.name.toLowerCase().endsWith('.csv')
+                  ) {
+                        alert(
+                              'Unsupported file type. Allowed: images, PDF, CSV.'
+                        );
+                        throw new Error('Unsupported file type');
+                  }
+
                   const fileSlugName = slugify(file.name, {
                         remove: /[*+~.()'"!:@]/g,
                   });

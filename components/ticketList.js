@@ -44,11 +44,33 @@ const TicketList = ({ customerTickets, customer }) => {
                                           >
                                                 {tik.title}
                                           </Text>
-                                          <Text small type="secondary">
-                                                {moment(
-                                                      tik.created_at
-                                                ).calendar()}
-                                          </Text>
+                                          <div className="ticket-badges">
+                                                {tik.status && (
+                                                      <span
+                                                            className={`status-badge status-${tik.status}`}
+                                                      >
+                                                            {tik.status}
+                                                      </span>
+                                                )}
+                                                {tik.priority &&
+                                                      tik.priority !==
+                                                            'normal' && (
+                                                            <span
+                                                                  className={`priority-badge priority-${tik.priority}`}
+                                                            >
+                                                                  {tik.priority}
+                                                            </span>
+                                                      )}
+                                                <Text
+                                                      small
+                                                      type="secondary"
+                                                      span
+                                                >
+                                                      {moment(
+                                                            tik.created_at
+                                                      ).calendar()}
+                                                </Text>
+                                          </div>
                                     </div>
                               </Link>
                         </div>

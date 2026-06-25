@@ -1,83 +1,152 @@
-import { Button, Divider, Text, User } from '@geist-ui/core';
-import { Formik } from 'formik';
+import { Select, Text, User } from '@geist-ui/core';
 import { useState } from 'react';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import ReactCountryFlag from 'react-country-flag';
-import {
-      HiLocation,
-      HiClock,
-      HiFlag,
-      HiTrash,
-      HiUserPlus,
-      HiTicket,
-} from '../config/icons';
+import moment from 'moment';
+import { HiLocation, HiClock, HiFlag } from '../config/icons';
 import CreateTicket from './createTicketForCustomer';
 
-const TicketInfoForm = ({ activeCustomerObj }) => {
-      const [errorMessage, setErrorMessage] = useState('');
+const STATUSES = ['open', 'pending', 'resolved', 'closed'];
+const PRIORITIES = ['low', 'normal', 'high', 'urgent'];
+
+const TicketInfoForm = ({
+      activeCustomerObj,
+      ticketObj,
+      agents = [],
+      onTicketUpdate,
+}) => {
+      const supabase = useSupabaseClient();
+      const [saving, setSaving] = useState(false);
+      const ipInfo = activeCustomerObj?.ipInfo || {};
+
+      const update = async (patch) => {
+            if (!ticketObj) return;
+            setSaving(true);
+            const { data } = await supabase
+                  .from('tickets')
+                  .update(patch)
+                  .eq('id', ticketObj.id)
+                  .select()
+                  .single();
+            setSaving(false);
+            if (data && onTicketUpdate) onTicketUpdate(data);
+      };
+
       return (
             <div className="ticket-info-form">
                   <User
-                        text="A"
-                        name={activeCustomerObj.idString}
+                        text={activeCustomerObj?.idString?.[0]?.toUpperCase() || 'U'}
+                        name={activeCustomerObj?.idString}
                         style={{ padding: '20px 0px' }}
                   >
-                        {activeCustomerObj.email}
+                        {activeCustomerObj?.email}
                   </User>
 
-                  <div className="svg-span">
-                        <HiLocation />
-                        <span>
-                              {activeCustomerObj.ipInfo.state},{' '}
-                              {activeCustomerObj.ipInfo.country}
-                        </span>
-                  </div>
-                  <div className="svg-span">
-                        <HiClock />
-                        <span>{activeCustomerObj.ipInfo.timeZone}</span>
-                  </div>
-                  <div className="svg-span">
-                        <HiFlag />
-                        <span>
-                              <ReactCountryFlag
-                                    countryCode={
-                                          activeCustomerObj.ipInfo?.countryCode
+                  {(ipInfo.state || ipInfo.country) && (
+                        <div className="svg-span">
+                              <HiLocation />
+                              <span>
+                                    {[ipInfo.state, ipInfo.country]
+                                          .filter(Boolean)
+                                          .join(', ')}
+                              </span>
+                        </div>
+                  )}
+                  {ipInfo.timeZone && (
+                        <div className="svg-span">
+                              <HiClock />
+                              <span>{ipInfo.timeZone}</span>
+                        </div>
+                  )}
+                  {ipInfo.countryCode && (
+                        <div className="svg-span">
+                              <HiFlag />
+                              <span>
+                                    <ReactCountryFlag
+                                          countryCode={ipInfo.countryCode}
+                                    />
+                              </span>
+                        </div>
+                  )}
+
+                  {ticketObj && (
+                        <div className="ticket-controls">
+                              <Text small type="secondary" className="control-label">
+                                    Status
+                              </Text>
+                              <Select
+                                    width="100%"
+                                    value={ticketObj.status || 'open'}
+                                    disabled={saving}
+                                    onChange={(v) => update({ status: v })}
+                              >
+                                    {STATUSES.map((s) => (
+                                          <Select.Option key={s} value={s}>
+                                                {s}
+                                          </Select.Option>
+                                    ))}
+                              </Select>
+
+                              <Text small type="secondary" className="control-label">
+                                    Priority
+                              </Text>
+                              <Select
+                                    width="100%"
+                                    value={ticketObj.priority || 'normal'}
+                                    disabled={saving}
+                                    onChange={(v) => update({ priority: v })}
+                              >
+                                    {PRIORITIES.map((p) => (
+                                          <Select.Option key={p} value={p}>
+                                                {p}
+                                          </Select.Option>
+                                    ))}
+                              </Select>
+
+                              <Text small type="secondary" className="control-label">
+                                    Assignee
+                              </Text>
+                              <Select
+                                    width="100%"
+                                    value={ticketObj.assignedTo || ''}
+                                    disabled={saving}
+                                    onChange={(v) =>
+                                          update({ assignedTo: v || null })
                                     }
-                              />
-                        </span>
-                  </div>
+                              >
+                                    <Select.Option value="">
+                                          Unassigned
+                                    </Select.Option>
+                                    {agents.map((a) => (
+                                          <Select.Option key={a.id} value={a.id}>
+                                                {a.email || a.idString}
+                                          </Select.Option>
+                                    ))}
+                              </Select>
+
+                              {ticketObj.firstResponseDueAt &&
+                                    !ticketObj.firstRespondedAt && (
+                                          <Text
+                                                small
+                                                type="secondary"
+                                                className="sla-note"
+                                          >
+                                                First response due{' '}
+                                                {moment(
+                                                      ticketObj.firstResponseDueAt
+                                                ).fromNow()}
+                                          </Text>
+                                    )}
+                        </div>
+                  )}
+
                   <br />
-                  <CreateTicket
-                        btnType="primary"
-                        activeCustomerObj={activeCustomerObj}
-                  />
-                  <Text h4 style={{ fontWeight: 500 }} mb={0}>
-                        Team members
-                  </Text>
-                  <div className="team-member">
-                        <User
-                              src="https://static.generated.photos/vue-static/home/hero/3.png"
-                              name="Witt"
+                  {activeCustomerObj && (
+                        <CreateTicket
+                              btnType="primary"
+                              activeCustomerObj={activeCustomerObj}
                         />
-                        <HiTrash />
-                  </div>
-                  <div className="team-member">
-                        <User
-                              src="https://static.generated.photos/vue-static/home/hero/3.png"
-                              name="Witt"
-                        />
-                        <HiTrash />
-                  </div>
-                  <Text
-                        small
-                        type="secondary"
-                        style={{
-                              textDecoration: 'underline',
-                              cursor: 'pointer',
-                        }}
-                        className="svg-span"
-                  >
-                        <HiUserPlus /> <span>Add a team member</span>
-                  </Text>
+                  )}
             </div>
       );
 };
