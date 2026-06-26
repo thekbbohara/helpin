@@ -1,4 +1,4 @@
-import { Button, Text } from '@geist-ui/core';
+import { Button, Text, useToasts } from '@geist-ui/core';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import Head from 'next/head';
@@ -14,6 +14,7 @@ const HandlePage = ({ ticketList }) => {
       const router = useRouter();
       const [loading, setLoading] = useState(false);
       const supabase = useSupabaseClient();
+      const { setToast } = useToasts();
 
       const createNewTicket = async () => {
             if (session) {
@@ -23,8 +24,17 @@ const HandlePage = ({ ticketList }) => {
                         .from('tickets')
                         .upsert({ userId: user.id, id: randomString(6, '#') })
                         .select();
-                  if (!error) router.push(`/tickets/${newTicket[0].id}`);
-                  setLoading(false);
+                  if (!error && newTicket?.[0]) {
+                        router.push(`/tickets/${newTicket[0].id}`);
+                  } else {
+                        setToast({
+                              text:
+                                    error?.message ||
+                                    'Could not start a new ticket. Please try again.',
+                              type: 'error',
+                        });
+                        setLoading(false);
+                  }
             }
       };
 
