@@ -69,6 +69,7 @@ function MyApp({ Component, pageProps }) {
                                     id: user.id,
                                     email: user.email,
                                     ipInfo,
+                                    role: 'customer',
                                     idString: randomString(8, 'a#'),
                                     avatarColor: randomColor(),
                               })
