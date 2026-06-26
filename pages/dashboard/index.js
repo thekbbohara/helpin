@@ -60,7 +60,7 @@ export const getServerSideProps = async (ctx) => {
             .eq('id', user.id)
             .single();
       const role = userObj?.role;
-      if (role === 'customer')
+      if (role !== 'agent' && role !== 'admin')
             return {
                   redirect: {
                         destination: '/',

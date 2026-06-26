@@ -142,7 +142,7 @@ export const getServerSideProps = async (ctx) => {
             .select(`role`)
             .eq('id', user.id)
             .single();
-      if (!me || me.role === 'customer')
+      if (me?.role !== 'agent' && me?.role !== 'admin')
             return { redirect: { destination: '/', permanent: false } };
 
       const { data: customers } = await supabase

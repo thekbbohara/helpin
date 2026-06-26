@@ -134,7 +134,7 @@ export const getServerSideProps = async (ctx) => {
       const activeCustomerObj = customerList[customerIndex];
       const sessionUser = customerList[customerSessionIndex];
 
-      if (sessionUser?.role === 'customer')
+      if (sessionUser?.role !== 'agent' && sessionUser?.role !== 'admin')
             return {
                   redirect: {
                         destination: '/',

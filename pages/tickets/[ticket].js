@@ -277,6 +277,14 @@ export const getServerSideProps = async (ctx) => {
             .eq('id', ticket)
             .single();
 
+      if (!ticketObj || ticketObj.userId !== session.user.id)
+            return {
+                  redirect: {
+                        destination: '/',
+                        permanent: false,
+                  },
+            };
+
       const { data, count } = await supabase
             .from('ticketMessages')
             .select(`*`, { count: 'exact' })

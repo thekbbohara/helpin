@@ -18,6 +18,12 @@ create table if not exists public.users (
       created_at    timestamptz not null default now()
 );
 
+-- Backfill: rows created before the default existed may have a NULL/blank role.
+-- A blank role must never be treated as staff (see is_agent()), so pin it to customer.
+alter table public.users alter column role set default 'customer';
+update public.users set role = 'customer' where role is null or role = '';
+alter table public.users alter column role set not null;
+
 -- tickets  (id is a short random string, e.g. randomString(6, '#'))
 create table if not exists public.tickets (
       id         text primary key,
@@ -118,7 +124,7 @@ create or replace function public.is_agent()
 returns boolean language sql stable security definer set search_path = public as $$
       select exists (
             select 1 from public.users
-            where id = auth.uid() and role is distinct from 'customer'
+            where id = auth.uid() and role in ('agent', 'admin')
       );
 $$;
 
